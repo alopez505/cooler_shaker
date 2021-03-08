@@ -4,6 +4,7 @@
 ### CSU Chico
 ### MECA/MECH 440 - Capstone Project
 ### Sponsor: SLAC National Accelerator Labratory
+![image](https://github.com/alopez505/cooler_shaker/issues/1#issue-824659455)
 
 ## Info
 This code is used to control the system on a Raspberry Pi.

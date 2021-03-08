@@ -9,7 +9,7 @@
 ## Info
 This code is used to control the system on a Raspberry Pi.
 
-`test2.py` was the inital code used to test and communicate with the RS-485 temperature controller.
+`temp_controller.py` was the inital code used to test and communicate with the RS-485 temperature controller.
 
 
 Currently, development on `temp_controller.py` is being done. It uses _**tkinter**_ to set up a GUI. The program controls the motor and communicates with the temperature controller.

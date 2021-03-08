@@ -14,6 +14,8 @@ This code is used to control the system on a Raspberry Pi.
 
 Currently, development on `gui.py` is being done. It uses _**tkinter**_ to set up a GUI. The program controls the motor and communicates with the temperature controller.
 
+Before adding the Modbus server to this code. Testing is being done on `pymodbus_updating_server.py`. This is so we can verify that a server can be successfully created before we start integrating the server into `gui.py`.
+
 _**pySerial**_ is used to communictate with the temperature controller over a serial RS-485 connection.
 
 _**Pymodbus**_ is used to connect to SLAC's Modbus TCP/IP. The package for pymodbus should be downloaded with _**Twisted**_ as well. _**Twisted**_ is an event driven networking engine that allows the Pi to be setup as a TCP/IP server.

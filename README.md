@@ -17,7 +17,7 @@ Before adding the Modbus server to `gui.py`. Testing was done on `pymodbus_updat
 
 Development on `gui.py` has since stopped. 
 
-Development has moved to `pyqt5_cooler_shaker_modbus.py` . This is because _**PyQt5**_ has accessible threading capabilities for running the motor and the Modbus TCP/IP server in background threads. Also, the aesthetic to _**pyqt5**_ was preferred.
+Development has moved to `pyqt5_cooler_shaker_modbus.py` . This is because _**PyQt5**_ has accessible threading capabilities for running the motor and the Modbus TCP/IP server in background threads. Also, the aesthetic to _**PyQt5**_ was preferred.
 
 _**pySerial**_ is used to communicate with the temperature controller over a serial RS-485 connection.
 

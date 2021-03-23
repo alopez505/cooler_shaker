@@ -88,9 +88,9 @@ class MotorWorker(QThread):
 
     def work(self):
         while self.working:
-            print ("Hello!")
+            print ("Motor Running!")
             print(self.currentThread())
-            sleep(1)
+            sleep(3)
 
             """ 
             sleep(dwell)

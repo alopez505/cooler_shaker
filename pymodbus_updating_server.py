@@ -11,6 +11,8 @@ a python thread::
     thread = Thread(target=updating_writer, args=(context,))
     thread.start()
 """
+
+
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
@@ -34,6 +36,7 @@ logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
+buf=['*','0','0','0','0','0','3','e','8','c','0','^'] #10 degrees buf data
 # --------------------------------------------------------------------------- #
 # define your callback process
 # --------------------------------------------------------------------------- #

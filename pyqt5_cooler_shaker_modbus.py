@@ -1,6 +1,13 @@
+# Written by: Alexander Lopez
+# Date Last Modified: 3/28/21
+
+# ------ ABOUT -------
+# This code is a work in progress. The purpose is to create a GUI that operates the liquid sampple cooler-shaker system and connects to a Modbus TCP client
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import QObject, QThread, pyqtSignal,  QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow
+
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
@@ -12,6 +19,7 @@ from twisted.internet.task import LoopingCall
 
 #import RPi.GPIO as GPIO
 from time import sleep
+
 import sys
 
 import logging
@@ -25,29 +33,10 @@ global MotorSpeed
 global MotorDwell
 global MotorAngle
 
-def updating_writer(a):
-    """ A worker process that runs every so often and
-    updates live values of the context. It should be noted
-    that there is a race condition for the update.
-
-    :param arguments: The input arguments to the call
-    """
-    log.debug("updating the context")
-    context = a[0]
-    register = 3
-    slave_id = 0x00
-    address = 0x10
-    values = context[slave_id].getValues(register, address, count=5)
-    values = [v + 1 for v in values]
-    log.debug("new values: " + str(values))
-    context[slave_id].setValues(register, address, values)
-
 class ServerWorker(QThread):
 
     def __init__(self):
         super(ServerWorker, self).__init__()
-        self.working = True
-        
 
     def work(self):
         print("init server")
@@ -70,13 +59,29 @@ class ServerWorker(QThread):
         identity.ModelName = 'pymodbus Server'
         identity.MajorMinorRevision = version.short()
         time = 5  # 5 seconds delay
-        loop = LoopingCall(f=updating_writer, a=(context,))
+        loop = LoopingCall(f=self.updating_writer, a=(context,))
         loop.start(time, now=False) # initially delay by time
         
         sleep(0.1)
         StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
+    def updating_writer(self, a):
+        """ A worker process that runs every so often and
+        updates live values of the context. It should be noted
+        that there is a race condition for the update.
 
+        :param arguments: The input arguments to the call
+        """
+        print(self.currentThread())
+        log.debug("updating the context")
+        context = a[0]
+        register = 3
+        slave_id = 0x00
+        address = 0x10
+        values = context[slave_id].getValues(register, address, count=5)
+        values = [v + 1 for v in values]
+        log.debug("new values: " + str(values))
+        context[slave_id].setValues(register, address, values)
 
 
 class MotorWorker(QThread):
@@ -119,14 +124,16 @@ class MotorWorker(QThread):
 
 class TempWindow(QMainWindow):
 
+    saveSettings = pyqtSignal()
+
     def __init__(self):
         super(TempWindow, self).__init__()
-        self.setGeometry(200, 200, 800, 450)
+        self.setGeometry(0, 0, 800, 480)
         self.initUI()
 
     def initUI(self):
         self.setObjectName("Temperature Settings")
-        self.resize(800, 450)
+        self.resize(800, 480)
         self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
         self.plus10 = QtWidgets.QPushButton(self.centralwidget)
@@ -148,20 +155,33 @@ class TempWindow(QMainWindow):
         self.minus01.setGeometry(QtCore.QRect(530, 290, 250, 125))
         self.minus01.setObjectName("minus01")
         self.SaveAndClose = QtWidgets.QPushButton(self.centralwidget)
-        self.SaveAndClose.setGeometry(QtCore.QRect(10, 10, 421, 131))
+        self.SaveAndClose.setGeometry(QtCore.QRect(10, 10, 420, 130))
         self.SaveAndClose.setObjectName("SaveAndClose")
-        self.DesiredTemp = QtWidgets.QLabel(self.centralwidget)
-        self.DesiredTemp.setGeometry(QtCore.QRect(490, 50, 131, 51))
-        self.DesiredTemp.setObjectName("DesiredTemp")
+
+        self.goalTempLabel = QtWidgets.QLabel(self.centralwidget)
+        self.goalTempLabel.setGeometry(QtCore.QRect(490, 50, 130, 50))
+        self.goalTempLabel.setObjectName("goalTempLabel")
+
+        self.goalSpinBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
+        self.goalSpinBox.setGeometry(QtCore.QRect(590, 60, 50, 30))
+        self.goalSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.goalSpinBox.setDecimals(1)
+        #self.goalSpinBox.setSingleStep(1.0)
+        self.goalSpinBox.setObjectName("goalSpinBox")
+
         self.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(self)
         QtCore.QMetaObject.connectSlotsByName(self)
 
-        self.SaveAndClose.clicked.connect(self.SaC)
+        self.plus10.clicked.connect(self.p10)
+        self.plus1.clicked.connect(self.p1)
+        self.plus01.clicked.connect(self.p01)
+        self.minus10.clicked.connect(self.m10)
+        self.minus1.clicked.connect(self.m1)
+        self.minus01.clicked.connect(self.m01)
 
-    def SaC(self):
-        self.close()
+        self.SaveAndClose.clicked.connect(self.SaC)
     
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -173,18 +193,45 @@ class TempWindow(QMainWindow):
         self.minus1.setText(_translate("Temperature Settings", "- 1"))
         self.minus01.setText(_translate("Temperature Settings", "- 0.1"))
         self.SaveAndClose.setText(_translate("Temperature Settings", "Save and Close"))
-        self.DesiredTemp.setText(_translate("Temperature Settings", "Desired Temperature: "))
+        self.goalTempLabel.setText(_translate("Temperature Settings", "Goal Temperature: "))
+
+    def SaC(self):
+        self.hide()
+
+    def p10(self):
+        self.goalSpinBox.setSingleStep(10.0)
+        self.goalSpinBox.stepUp()
+
+    def p1(self):
+        self.goalSpinBox.setSingleStep(1.0)
+        self.goalSpinBox.stepUp()
+    
+    def p01(self):
+        self.goalSpinBox.setSingleStep(0.1)
+        self.goalSpinBox.stepUp()
+    
+    def m10(self):
+        self.goalSpinBox.setSingleStep(10.0)
+        self.goalSpinBox.stepDown()
+
+    def m1(self):
+        self.goalSpinBox.setSingleStep(1.0)
+        self.goalSpinBox.stepDown()
+    
+    def m01(self):
+        self.goalSpinBox.setSingleStep(0.1)
+        self.goalSpinBox.stepDown()
 
 class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWindow class
 
     def __init__(self):
         super(MyWindow, self).__init__()        #super refrences top lvl class
-        self.setGeometry(200, 200, 800, 450)
+        self.setGeometry(0, 0, 800, 480)
         self.initUI()
 
     def initUI(self):
         self.setObjectName("MainWindow")
-        self.resize(800, 450)
+        self.resize(800, 480)
         self.setTabShape(QtWidgets.QTabWidget.Rounded)
         self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
@@ -255,7 +302,7 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
             # make sure those last two are connected to themselves or you will get random crashes
 
     def StartServer(self):
-        print("start server")
+        print("Starting server...")
         self.serverthread = QThread(parent=self)  # a new thread to run our background tasks in
         self.serverworker = ServerWorker()  # a new worker to perform those tasks
         self.serverworker.moveToThread(self.serverthread)  # move the worker into the thread, do this first before connecting the signals
@@ -265,7 +312,7 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
             
     def loop_finished(self):
         # received a callback from the thread that it completed
-        print('Looped Finished')
+        print('Loop Finished')
 
 
 

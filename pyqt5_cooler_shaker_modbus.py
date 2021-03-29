@@ -257,6 +257,17 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         self.TempSettings.setGeometry(QtCore.QRect(600, 0, 200, 80))
         self.TempSettings.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.TempSettings.setObjectName("TempSettings")
+
+        self.Goal_temp_label = QtWidgets.QLabel(self.centralwidget)
+        self.Goal_temp_label.setGeometry(QtCore.QRect(310, 20, 131, 51))
+        self.Goal_temp_label.setObjectName("Goal temp label")
+        self.GT_SB = QtWidgets.QDoubleSpinBox(self.centralwidget)
+        self.GT_SB.setGeometry(QtCore.QRect(400, 30, 51, 31))
+        self.GT_SB.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.GT_SB.setDecimals(1)
+        self.GT_SB.setSingleStep(1.0)
+        self.GT_SB.setObjectName("GT_SB")
+
         self.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(self)
@@ -278,6 +289,7 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         self.RotateFwd.setText(_translate("MainWindow", "Rotate Fwd"))
         self.RotateRev.setText(_translate("MainWindow", "Rotate Rev"))
         self.TempSettings.setText(_translate("MainWindow", "Temp Settings"))
+        self.Goal_temp_label.setText(_translate("MainWindow", "Goal Temperature"))
 
     def tempclick(self):
         #MyWindow.hide(self)         #or self.hide()

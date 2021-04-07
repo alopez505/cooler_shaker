@@ -5,7 +5,7 @@
 # This code is a work in progress. The purpose is to create a GUI that operates the liquid sampple cooler-shaker system and connects to a Modbus TCP client
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import QObject, QThread, pyqtSignal,  QTimer
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from pymodbus.version import version
@@ -27,11 +27,11 @@ logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-global TempCurrent
-global TempSet 
-global MotorSpeed
-global MotorDwell
-global MotorAngle
+#global TempCurrent
+#global TempSet 
+#global MotorSpeed
+#global MotorDwell
+#global MotorAngle
 
 class ServerWorker(QThread):
 
@@ -39,8 +39,7 @@ class ServerWorker(QThread):
         super(ServerWorker, self).__init__()
 
     def work(self):
-        print("init server")
-        print(self.currentThread())
+        log.info(self.currentThread())
         sleep(0.1)
         store = ModbusSlaveContext(
             di=ModbusSequentialDataBlock(0, [17]*100),
@@ -154,9 +153,9 @@ class TempWindow(QMainWindow):
         self.minus01 = QtWidgets.QPushButton(self.centralwidget)
         self.minus01.setGeometry(QtCore.QRect(530, 290, 250, 125))
         self.minus01.setObjectName("minus01")
-        self.SaveAndClose = QtWidgets.QPushButton(self.centralwidget)
-        self.SaveAndClose.setGeometry(QtCore.QRect(10, 10, 420, 130))
-        self.SaveAndClose.setObjectName("SaveAndClose")
+        self.SaveAndCloseTemp = QtWidgets.QPushButton(self.centralwidget)
+        self.SaveAndCloseTemp.setGeometry(QtCore.QRect(10, 10, 420, 130))
+        self.SaveAndCloseTemp.setObjectName("SaveAndCloseTemp")
 
         self.goalTempLabel = QtWidgets.QLabel(self.centralwidget)
         self.goalTempLabel.setGeometry(QtCore.QRect(490, 50, 130, 50))
@@ -181,7 +180,7 @@ class TempWindow(QMainWindow):
         self.minus1.clicked.connect(self.m1)
         self.minus01.clicked.connect(self.m01)
 
-        self.SaveAndClose.clicked.connect(self.SaC)
+        self.SaveAndCloseTemp.clicked.connect(self.SacT)
     
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -192,10 +191,11 @@ class TempWindow(QMainWindow):
         self.minus10.setText(_translate("Temperature Settings", "- 10"))
         self.minus1.setText(_translate("Temperature Settings", "- 1"))
         self.minus01.setText(_translate("Temperature Settings", "- 0.1"))
-        self.SaveAndClose.setText(_translate("Temperature Settings", "Save and Close"))
+        self.SaveAndCloseTemp.setText(_translate("Temperature Settings", "Save and Close"))
         self.goalTempLabel.setText(_translate("Temperature Settings", "Goal Temperature: "))
 
-    def SaC(self):
+    def SacT(self):
+        self.saveSettings.emit()
         self.hide()
 
     def p10(self):
@@ -278,6 +278,11 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         self.tempwindow = TempWindow()
         self.TempSettings.clicked.connect(self.tempclick)
 
+        #self.tempwindow.goalSpinBox.valueChanged['double'].connect(self.GT_SB.setValue)     # passes data from tempwindow to the main screen
+        # does this as number is changed, replaced with saveSettings signal
+
+        self.tempwindow.saveSettings.connect(self.updateGT)     # on save aand close, updates main window
+
         self.StartStopMotor.clicked.connect(self.StartStopHandler)
 
 
@@ -292,8 +297,10 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         self.Goal_temp_label.setText(_translate("MainWindow", "Goal Temperature"))
 
     def tempclick(self):
-        #MyWindow.hide(self)         #or self.hide()
         self.tempwindow.show()
+
+    def updateGT(self):
+        self.GT_SB.setValue(self.tempwindow.goalSpinBox.value())    #update goal temp main window
 
     def StartStopHandler(self):
         if self.StartStopMotor.isChecked():
@@ -304,7 +311,6 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
 
             self.motorthread.started.connect(self.motorworker.work)  # begin our worker object's loop when the thread starts running
             self.motorthread.start()
-            #self.StartStopMotor.clicked.connect(self.stop_loop)  # stop the loop on the stop button click [DELETE line]
         else:
             self.motorworker.working = False
             self.motorworker.finished.connect(self.loop_finished)  # do something in the gui when the worker loop ends

@@ -41,3 +41,8 @@ pip install -U pymodbus[twisted]
 ```bash
 pip install PyQt5
 ```
+
+- [PyQt5 Tools](https://pypi.org/project/pyqt5-tools/)
+```bash
+pip install pyqt5-tools
+```

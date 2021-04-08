@@ -412,16 +412,67 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         self.TempSettings.setGeometry(QtCore.QRect(600, 0, 200, 80))
         self.TempSettings.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.TempSettings.setObjectName("TempSettings")
-
-        self.Goal_temp_label = QtWidgets.QLabel(self.centralwidget)
-        self.Goal_temp_label.setGeometry(QtCore.QRect(310, 20, 131, 51))
-        self.Goal_temp_label.setObjectName("Goal temp label")
         self.GT_SB = QtWidgets.QDoubleSpinBox(self.centralwidget)
-        self.GT_SB.setGeometry(QtCore.QRect(400, 30, 51, 31))
+        self.GT_SB.setGeometry(QtCore.QRect(320, 30, 51, 31))
+        self.GT_SB.setInputMethodHints(QtCore.Qt.ImhFormattedNumbersOnly)
+        self.GT_SB.setReadOnly(False)
         self.GT_SB.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.GT_SB.setDecimals(1)
         self.GT_SB.setSingleStep(1.0)
         self.GT_SB.setObjectName("GT_SB")
+        self.Goal_temp_label = QtWidgets.QLabel(self.centralwidget)
+        self.Goal_temp_label.setGeometry(QtCore.QRect(230, 20, 91, 51))
+        self.Goal_temp_label.setObjectName("Goal_temp_label")
+        self.Current_temp_label = QtWidgets.QLabel(self.centralwidget)
+        self.Current_temp_label.setGeometry(QtCore.QRect(210, 70, 101, 51))
+        self.Current_temp_label.setObjectName("Current_temp_label")
+        self.CT_SB = QtWidgets.QDoubleSpinBox(self.centralwidget)
+        self.CT_SB.setGeometry(QtCore.QRect(320, 80, 51, 31))
+        self.CT_SB.setInputMethodHints(QtCore.Qt.ImhFormattedNumbersOnly)
+        self.CT_SB.setReadOnly(False)
+        self.CT_SB.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.CT_SB.setDecimals(1)
+        self.CT_SB.setSingleStep(0.01)
+        self.CT_SB.setObjectName("CT_SB")
+        self.Motor_speed_label = QtWidgets.QLabel(self.centralwidget)
+        self.Motor_speed_label.setGeometry(QtCore.QRect(430, 30, 111, 31))
+        self.Motor_speed_label.setObjectName("Motor_speed_label")
+        self.Motor_dor_label = QtWidgets.QLabel(self.centralwidget)
+        self.Motor_dor_label.setGeometry(QtCore.QRect(380, 80, 161, 31))
+        self.Motor_dor_label.setObjectName("Motor_dor_label")
+        self.Motor_dwell_label = QtWidgets.QLabel(self.centralwidget)
+        self.Motor_dwell_label.setGeometry(QtCore.QRect(430, 130, 101, 31))
+        self.Motor_dwell_label.setObjectName("Motor_dwell_label")
+        self.MS_SB = QtWidgets.QDoubleSpinBox(self.centralwidget)
+        self.MS_SB.setGeometry(QtCore.QRect(540, 30, 51, 31))
+        self.MS_SB.setInputMethodHints(QtCore.Qt.ImhFormattedNumbersOnly)
+        self.MS_SB.setReadOnly(False)
+        self.MS_SB.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.MS_SB.setDecimals(0)
+        self.MS_SB.setMaximum(360.0)
+        self.MS_SB.setSingleStep(1.0)
+        self.MS_SB.setProperty("value", 90.0)
+        self.MS_SB.setObjectName("MS_SB")
+        self.MDOR_SB = QtWidgets.QDoubleSpinBox(self.centralwidget)
+        self.MDOR_SB.setGeometry(QtCore.QRect(540, 80, 51, 31))
+        self.MDOR_SB.setInputMethodHints(QtCore.Qt.ImhFormattedNumbersOnly)
+        self.MDOR_SB.setReadOnly(False)
+        self.MDOR_SB.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.MDOR_SB.setDecimals(0)
+        self.MDOR_SB.setMaximum(360.0)
+        self.MDOR_SB.setSingleStep(15.0)
+        self.MDOR_SB.setProperty("value", 360.0)
+        self.MDOR_SB.setObjectName("MDOR_SB")
+        self.MD_SB = QtWidgets.QDoubleSpinBox(self.centralwidget)
+        self.MD_SB.setGeometry(QtCore.QRect(540, 130, 51, 31))
+        self.MD_SB.setInputMethodHints(QtCore.Qt.ImhFormattedNumbersOnly)
+        self.MD_SB.setReadOnly(False)
+        self.MD_SB.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.MD_SB.setDecimals(1)
+        self.MD_SB.setMaximum(10.0)
+        self.MD_SB.setSingleStep(0.5)
+        self.MD_SB.setProperty("value", 0.5)
+        self.MD_SB.setObjectName("MD_SB")
 
         self.setCentralWidget(self.centralwidget)
 
@@ -439,6 +490,7 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         # does this as number is changed, replaced with saveTempSettings signal
 
         self.tempwindow.saveTempSettings.connect(self.updateGT)     # on save aand close, updates main window
+        self.motorwindow.saveMotorSettings.connect(self.updateMS)
 
         self.StartStopMotor.clicked.connect(self.StartStopHandler)
 
@@ -452,6 +504,10 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         self.RotateRev.setText(_translate("MainWindow", "Rotate Rev"))
         self.TempSettings.setText(_translate("MainWindow", "Temp Settings"))
         self.Goal_temp_label.setText(_translate("MainWindow", "Goal Temperature"))
+        self.Current_temp_label.setText(_translate("MainWindow", "Current Temperature"))
+        self.Motor_speed_label.setText(_translate("MainWindow", "Motor Speed (deg/sec)"))
+        self.Motor_dor_label.setText(_translate("MainWindow", "Motor Degrees of rotation (deg)"))
+        self.Motor_dwell_label.setText(_translate("MainWindow", "Motor Dwell Time (s)"))
 
     def tempclick(self):
         self.tempwindow.show()
@@ -461,6 +517,12 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
 
     def updateGT(self):
         self.GT_SB.setValue(self.tempwindow.goalSpinBox.value())    #update goal temp main window on save and close
+
+    def updateMS(self):
+        self.MS_SB.setValue(self.motorwindow.msSpinBox.value())
+        self.MDOR_SB.setValue(self.motorwindow.dorSpinBox.value())
+        self.MD_SB.setValue(self.motorwindow.dwellSpinBox.value())
+
 
     def StartStopHandler(self):
         if self.StartStopMotor.isChecked():

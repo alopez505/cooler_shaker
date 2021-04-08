@@ -33,6 +33,8 @@ log.setLevel(logging.DEBUG)
 #global MotorDwell
 #global MotorAngle
 
+motorSteps = 200
+
 class ServerWorker(QThread):
 
     def __init__(self):
@@ -121,9 +123,162 @@ class MotorWorker(QThread):
             """
         self.finished.emit() # alert our gui that the loop stopped
 
+class MotorWindow(QMainWindow):
+
+    saveMotorSettings = pyqtSignal()
+
+    def __init__(self):
+        super(MotorWindow, self).__init__()
+        self.setGeometry(0, 0, 800, 480)
+        self.initUI()
+
+    def initUI(self):
+        self.setObjectName("Motor Settings")
+        self.resize(800, 480)
+        self.centralwidget = QtWidgets.QWidget(self)
+        self.centralwidget.setObjectName("centralwidget")
+        self.SaveAndCloseMotor = QtWidgets.QPushButton(self.centralwidget)
+        self.SaveAndCloseMotor.setGeometry(QtCore.QRect(10, 10, 421, 131))
+        self.SaveAndCloseMotor.setObjectName("SaveAndCloseMotor")
+        self.msSpinBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
+        self.msSpinBox.setGeometry(QtCore.QRect(170, 160, 41, 31))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.msSpinBox.setFont(font)
+        self.msSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.msSpinBox.setDecimals(0)
+        self.msSpinBox.setMaximum(360.0)
+        self.msSpinBox.setSingleStep(15.0)
+        self.msSpinBox.setProperty("value", 90.0)
+        self.msSpinBox.setObjectName("msSpinBox")
+        self.dorSpinBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
+        self.dorSpinBox.setGeometry(QtCore.QRect(470, 160, 41, 31))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.dorSpinBox.setFont(font)
+        self.dorSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.dorSpinBox.setDecimals(0)
+        self.dorSpinBox.setMaximum(360.0)
+        self.dorSpinBox.setSingleStep(45.0)
+        self.dorSpinBox.setProperty("value", 360.0)
+        self.dorSpinBox.setObjectName("dorSpinBox")
+        self.dwellSpinBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
+        self.dwellSpinBox.setGeometry(QtCore.QRect(670, 160, 41, 31))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.dwellSpinBox.setFont(font)
+        self.dwellSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.dwellSpinBox.setDecimals(1)
+        self.dwellSpinBox.setMaximum(10.0)
+        self.dwellSpinBox.setSingleStep(0.5)
+        self.dwellSpinBox.setProperty("value", 0.5)
+        self.dwellSpinBox.setObjectName("dwellSpinBox")
+        self.SpeedLabel = QtWidgets.QLabel(self.centralwidget)
+        self.SpeedLabel.setGeometry(QtCore.QRect(10, 150, 151, 41))
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        self.SpeedLabel.setFont(font)
+        self.SpeedLabel.setObjectName("SpeedLabel")
+        self.DORLabel = QtWidgets.QLabel(self.centralwidget)
+        self.DORLabel.setGeometry(QtCore.QRect(290, 150, 171, 41))
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        self.DORLabel.setFont(font)
+        self.DORLabel.setObjectName("DORLabel")
+        self.DwellLabel = QtWidgets.QLabel(self.centralwidget)
+        self.DwellLabel.setGeometry(QtCore.QRect(570, 150, 101, 41))
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        self.DwellLabel.setFont(font)
+        self.DwellLabel.setObjectName("DwellLabel")
+        self.PlusSpeed = QtWidgets.QPushButton(self.centralwidget)
+        self.PlusSpeed.setGeometry(QtCore.QRect(10, 200, 250, 125))
+        font = QtGui.QFont()
+        font.setPointSize(28)
+        self.PlusSpeed.setFont(font)
+        self.PlusSpeed.setObjectName("PlusSpeed")
+        self.PlusDOR = QtWidgets.QPushButton(self.centralwidget)
+        self.PlusDOR.setGeometry(QtCore.QRect(270, 200, 250, 125))
+        font = QtGui.QFont()
+        font.setPointSize(28)
+        self.PlusDOR.setFont(font)
+        self.PlusDOR.setObjectName("PlusDOR")
+        self.PlusDwell = QtWidgets.QPushButton(self.centralwidget)
+        self.PlusDwell.setGeometry(QtCore.QRect(530, 200, 250, 125))
+        font = QtGui.QFont()
+        font.setPointSize(28)
+        self.PlusDwell.setFont(font)
+        self.PlusDwell.setObjectName("PlusDwell")
+        self.MinusSpeed = QtWidgets.QPushButton(self.centralwidget)
+        self.MinusSpeed.setGeometry(QtCore.QRect(10, 340, 250, 125))
+        font = QtGui.QFont()
+        font.setPointSize(28)
+        self.MinusSpeed.setFont(font)
+        self.MinusSpeed.setObjectName("MinusSpeed")
+        self.MinusDOR = QtWidgets.QPushButton(self.centralwidget)
+        self.MinusDOR.setGeometry(QtCore.QRect(270, 340, 250, 125))
+        font = QtGui.QFont()
+        font.setPointSize(28)
+        self.MinusDOR.setFont(font)
+        self.MinusDOR.setObjectName("MinusDOR")
+        self.MinusDwell = QtWidgets.QPushButton(self.centralwidget)
+        self.MinusDwell.setGeometry(QtCore.QRect(530, 340, 250, 125))
+        font = QtGui.QFont()
+        font.setPointSize(28)
+        self.MinusDwell.setFont(font)
+        self.MinusDwell.setObjectName("MinusDwell")
+        self.setCentralWidget(self.centralwidget)
+
+        self.retranslateUi(self)
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+        self.SaveAndCloseMotor.clicked.connect(self.SaCM)
+        self.PlusSpeed.clicked.connect(self.ps)
+        self.PlusDOR.clicked.connect(self.pdor)
+        self.PlusDwell.clicked.connect(self.pd)
+        self.MinusSpeed.clicked.connect(self.ms)
+        self.MinusDOR.clicked.connect(self.mdor)
+        self.MinusDwell.clicked.connect(self.md)
+
+    def retranslateUi(self, MotorWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MotorWindow.setWindowTitle(_translate("Motor Settings", "Motor Settings"))
+        self.SaveAndCloseMotor.setText(_translate("Motor Settings", "Save and Close"))
+        self.SpeedLabel.setText(_translate("Motor Settings", "Motor Speed (deg/sec)"))
+        self.DORLabel.setText(_translate("Motor Settings", "Degrees of Rotation (deg)"))
+        self.DwellLabel.setText(_translate("Motor Settings", "Dwell Time (s)"))
+        self.PlusSpeed.setText(_translate("Motor Settings", "+"))
+        self.PlusDOR.setText(_translate("Motor Settings", "+"))
+        self.PlusDwell.setText(_translate("Motor Settings", "+"))
+        self.MinusSpeed.setText(_translate("Motor Settings", "-"))
+        self.MinusDOR.setText(_translate("Motor Settings", "-"))
+        self.MinusDwell.setText(_translate("Motor Settings", "-"))
+
+    def SaCM(self):
+        self.saveMotorSettings.emit()
+        self.hide()
+
+    def ps(self):
+        self.msSpinBox.stepUp()
+    
+    def pdor(self):
+        self.dorSpinBox.stepUp()
+
+    def pd(self):
+        self.dwellSpinBox.stepUp()
+
+    def ms(self):
+        self.msSpinBox.stepDown()
+    
+    def mdor(self):
+        self.dorSpinBox.stepDown()
+
+    def md(self):
+        self.dwellSpinBox.stepDown()
+
 class TempWindow(QMainWindow):
 
-    saveSettings = pyqtSignal()
+    saveTempSettings = pyqtSignal()
 
     def __init__(self):
         super(TempWindow, self).__init__()
@@ -180,11 +335,11 @@ class TempWindow(QMainWindow):
         self.minus1.clicked.connect(self.m1)
         self.minus01.clicked.connect(self.m01)
 
-        self.SaveAndCloseTemp.clicked.connect(self.SacT)
+        self.SaveAndCloseTemp.clicked.connect(self.SaCT)
     
-    def retranslateUi(self, MainWindow):
+    def retranslateUi(self, TempWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("Temperature Settings", "Temperature Settings"))
+        TempWindow.setWindowTitle(_translate("Temperature Settings", "Temperature Settings"))
         self.plus10.setText(_translate("Temperature Settings", "+ 10"))
         self.plus1.setText(_translate("Temperature Settings", "+ 1"))
         self.plus01.setText(_translate("Temperature Settings", "+ 0.1"))
@@ -194,8 +349,8 @@ class TempWindow(QMainWindow):
         self.SaveAndCloseTemp.setText(_translate("Temperature Settings", "Save and Close"))
         self.goalTempLabel.setText(_translate("Temperature Settings", "Goal Temperature: "))
 
-    def SacT(self):
-        self.saveSettings.emit()
+    def SaCT(self):                 # hide window and update main window
+        self.saveTempSettings.emit()
         self.hide()
 
     def p10(self):
@@ -276,12 +431,14 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         self.StartServer()
 
         self.tempwindow = TempWindow()
+        self.motorwindow = MotorWindow()
         self.TempSettings.clicked.connect(self.tempclick)
+        self.MotorSettings.clicked.connect(self.motorclick)
 
         #self.tempwindow.goalSpinBox.valueChanged['double'].connect(self.GT_SB.setValue)     # passes data from tempwindow to the main screen
-        # does this as number is changed, replaced with saveSettings signal
+        # does this as number is changed, replaced with saveTempSettings signal
 
-        self.tempwindow.saveSettings.connect(self.updateGT)     # on save aand close, updates main window
+        self.tempwindow.saveTempSettings.connect(self.updateGT)     # on save aand close, updates main window
 
         self.StartStopMotor.clicked.connect(self.StartStopHandler)
 
@@ -299,8 +456,11 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
     def tempclick(self):
         self.tempwindow.show()
 
+    def motorclick(self):
+        self.motorwindow.show()
+
     def updateGT(self):
-        self.GT_SB.setValue(self.tempwindow.goalSpinBox.value())    #update goal temp main window
+        self.GT_SB.setValue(self.tempwindow.goalSpinBox.value())    #update goal temp main window on save and close
 
     def StartStopHandler(self):
         if self.StartStopMotor.isChecked():

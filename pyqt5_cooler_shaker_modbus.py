@@ -37,8 +37,15 @@ motorSteps = 200
 
 class ServerWorker(QThread):
 
+    updateModbusValues = pyqtSignal()
+
     def __init__(self):
         super(ServerWorker, self).__init__()
+        self.MB_goal_temp = 0.0
+        self.MB_current_temp = 0.0
+        self.MB_motor_speed = 0
+        self.MB_motor_dor = 0
+        self.MB_motor_dwell = 0
 
     def work(self):
         log.info(self.currentThread())
@@ -59,7 +66,7 @@ class ServerWorker(QThread):
         identity.ProductName = 'pymodbus Server'
         identity.ModelName = 'pymodbus Server'
         identity.MajorMinorRevision = version.short()
-        time = 5  # 5 seconds delay
+        time = 4.9  # 5 seconds delay
         loop = LoopingCall(f=self.updating_writer, a=(context,))
         loop.start(time, now=False) # initially delay by time
         
@@ -73,13 +80,23 @@ class ServerWorker(QThread):
 
         :param arguments: The input arguments to the call
         """
-        print(self.currentThread())
         log.debug("updating the context")
+        self.updateModbusValues.emit()
+        sleep(0.1)
+
+        print(self.MB_goal_temp)
+        print(self.MB_current_temp)
+        print(self.MB_motor_speed)
+        print(self.MB_motor_dor)
+        print(self.MB_motor_dwell)
+
         context = a[0]
+        print(context)
         register = 3
         slave_id = 0x00
         address = 0x10
         values = context[slave_id].getValues(register, address, count=5)
+        print(values)
         values = [v + 1 for v in values]
         log.debug("new values: " + str(values))
         context[slave_id].setValues(register, address, values)
@@ -491,6 +508,7 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
 
         self.tempwindow.saveTempSettings.connect(self.updateGT)     # on save aand close, updates main window
         self.motorwindow.saveMotorSettings.connect(self.updateMS)
+        self.serverworker.updateModbusValues.connect(self.updateMB)
 
         self.StartStopMotor.clicked.connect(self.StartStopHandler)
 
@@ -523,6 +541,12 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         self.MDOR_SB.setValue(self.motorwindow.dorSpinBox.value())
         self.MD_SB.setValue(self.motorwindow.dwellSpinBox.value())
 
+    def updateMB(self):
+        self.serverworker.MB_goal_temp = self.GT_SB.value()
+        self.serverworker.MB_current_temp = self.CT_SB.value()
+        self.serverworker.MB_motor_speed = self.MS_SB.value()
+        self.serverworker.MB_motor_dor = self.MDOR_SB.value()
+        self.serverworker.MB_motor_dwell = self.MD_SB.value()
 
     def StartStopHandler(self):
         if self.StartStopMotor.isChecked():

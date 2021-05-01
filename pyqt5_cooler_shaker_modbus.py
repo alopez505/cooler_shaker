@@ -17,44 +17,97 @@ from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
 from twisted.internet.task import LoopingCall
 
-#import RPi.GPIO as GPIO
+
+
 from time import sleep
 
 import sys
+
+#import serial
+#ser=serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
 
 import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-#global TempCurrent
-#global TempSet 
-#global MotorSpeed
-#global MotorDwell
-#global MotorAngle
+#ser=serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
+
+DIR = 20
+STEP = 21
+CW = 1
+CCW = 0
+#import RPi.GPIO as GPIO
+#GPIO.setmode(GPIO.BCM)
+#GPIO.setup(DIR, GPIO.OUT)
+#GPIO.setup(STEP, GPIO.OUT)
 
 motorSteps = 200
-
+""" 
+def ieee(n):
+    sign = '0'            # 0=positive, 1=negative
+    if n < 0:
+        sign = '1'
+        n = n * -1
+    elif n==0.0:
+        return 0, 0
+    whole_num, dec_num = str(n).split('.')
+    dec = str(bin(int(whole_num)))[2:]+'.'
+    for x in range(30):
+        dec_num = str('0.')+dec_num
+        temp = str(float(dec_num)*2)
+        whole_num, dec_num = temp.split('.')
+        dec+=whole_num
+    dotPlace = dec.find('.')
+    onePlace = dec.find('1')
+    dec = dec.replace(".","")
+    dotPlace -= 1
+    if onePlace > dotPlace:     # n < 1
+        onePlace -= 1
+    mantissa = dec[onePlace+1:]
+    mantissa = mantissa[0:23]
+    exp = dotPlace - onePlace
+    exp_bits = exp + 127
+    exp_bits = bin(exp_bits)[2:].zfill(8)
+    ieee_num = sign + exp_bits + mantissa
+    print("ieee_num: ", ieee_num)
+    fin1, fin2 = ieee_num[0:16], ieee_num[16:32]
+    fin1, fin2 = int(fin1,2), int(fin2,2)
+    return fin1, fin2
+"""
+""" 
+def ieee745_to_float(N): # ieee-745 bits (max 32 bit)
+    if N =='00000000000000000000000000000000':
+        return 0.0
+    a = int(N[0])        # sign,     1 bit
+    b = int(N[1:9],2)    # exponent, 8 bits
+    c = int("1"+N[9:], 2)# fraction, len(N)-9 bits
+    x = (-1)**a * c /( 1<<( len(N)-9 - (b-127) ))
+    return x
+"""
 class ServerWorker(QThread):
 
     updateModbusValues = pyqtSignal()
+    updateGUIValues = pyqtSignal()
+    updateCurrentTemp = pyqtSignal()
 
     def __init__(self):
         super(ServerWorker, self).__init__()
         self.MB_goal_temp = 0.0
         self.MB_current_temp = 0.0
-        self.MB_motor_speed = 0
-        self.MB_motor_dor = 0
-        self.MB_motor_dwell = 0
-
+        self.MB_motor_speed = 0.0
+        self.MB_motor_dor = 0.0
+        self.MB_motor_dwell = 0.0
+        
     def work(self):
+        self.updateModbusValues.emit()
         log.info(self.currentThread())
         sleep(0.1)
         store = ModbusSlaveContext(
-            di=ModbusSequentialDataBlock(0, [17]*100),
-            co=ModbusSequentialDataBlock(0, [17]*100),
-            hr=ModbusSequentialDataBlock(0, [17]*100),
-            ir=ModbusSequentialDataBlock(0, [17]*100))
+            co=ModbusSequentialDataBlock(0, [0]*1),
+            di=ModbusSequentialDataBlock(0, [0]*1),
+            hr=ModbusSequentialDataBlock(0, [0]*8),
+            ir=ModbusSequentialDataBlock(0, [0]*2),zero_mode=True)
         context = ModbusServerContext(slaves=store, single=True)
         # ----------------------------------------------------------------------- # 
         # initialize the server information
@@ -66,11 +119,13 @@ class ServerWorker(QThread):
         identity.ProductName = 'pymodbus Server'
         identity.ModelName = 'pymodbus Server'
         identity.MajorMinorRevision = version.short()
-        time = 4.9  # 5 seconds delay
+        time = 4.9  # 4.9 second delay
         loop = LoopingCall(f=self.updating_writer, a=(context,))
         loop.start(time, now=False) # initially delay by time
         
         sleep(0.1)
+        #self.updateModbusValues.emit()
+        context[0x00].setValues(3, 0x00, [0, 0, 17076, 0, 17332, 0, 16128, 0])
         StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
     def updating_writer(self, a):
@@ -81,25 +136,148 @@ class ServerWorker(QThread):
         :param arguments: The input arguments to the call
         """
         log.debug("updating the context")
+        #SB_values_old = [self.MB_goal_temp, self.MB_current_temp, self.MB_motor_speed, self.MB_motor_dor, self.MB_motor_dwell]
+        HR_values_old = [self.MB_goal_temp, self.MB_motor_speed, self.MB_motor_dor, self.MB_motor_dwell]
         self.updateModbusValues.emit()
-        sleep(0.1)
-
-        print(self.MB_goal_temp)
-        print(self.MB_current_temp)
-        print(self.MB_motor_speed)
-        print(self.MB_motor_dor)
-        print(self.MB_motor_dwell)
-
+        sleep(0.5)
+        #SB_values = [self.MB_goal_temp, self.MB_current_temp, self.MB_motor_speed, self.MB_motor_dor, self.MB_motor_dwell]
+        HR_values_gui = [self.MB_goal_temp, self.MB_motor_speed, self.MB_motor_dor, self.MB_motor_dwell]
+        print ("oldHR: ", HR_values_old)
+        print("HR_GUI: ", HR_values_gui)
         context = a[0]
-        print(context)
-        register = 3
+        register_hr = 3        # 1=co , 2=di, 3=hr, 4=ir
+        register_ir = 4
         slave_id = 0x00
-        address = 0x10
-        values = context[slave_id].getValues(register, address, count=5)
-        print(values)
+        address = 0x00      #starting address for values
+        goal_temp_ieee1, goal_temp_ieee2 = self.float_to_ieee(self.MB_goal_temp)
+        motor_speed_ieee1, motor_speed_ieee2 = self.float_to_ieee(self.MB_motor_speed)
+        motor_dor_ieee1, motor_dor_ieee2 = self.float_to_ieee(self.MB_motor_dor)
+        motor_dwell_ieee1, motor_dwell_ieee2 = self.float_to_ieee(self.MB_motor_dwell)
+        hr_values_ieee = [goal_temp_ieee1, goal_temp_ieee2, motor_speed_ieee1, motor_speed_ieee2, motor_dor_ieee1, motor_dor_ieee2, motor_dwell_ieee1, motor_dwell_ieee2]
+        hr_values_inServer_ieee = context[slave_id].getValues(register_hr, address, count=8)
+        print("HRvalues_fromMBValues: ",hr_values_ieee )
+        print("HRvalues_fromServer", hr_values_inServer_ieee)
+        if HR_values_old != HR_values_gui:
+            print("GUI Changed")
+            context[slave_id].setValues(register_hr, address, hr_values_ieee)
+            print("Set HR Values to: ", HR_values_gui)
+        elif hr_values_inServer_ieee != hr_values_ieee:
+            print("MB change")
+            gt=round(self.ieee745_to_float(bin(hr_values_inServer_ieee[0]).replace('0b','').zfill(16)+bin(hr_values_inServer_ieee[1]).replace('0b','').zfill(16)),2)
+            print("Server 0+1: ", gt)
+            ms=round(self.ieee745_to_float(bin(hr_values_inServer_ieee[2]).replace('0b','').zfill(16)+bin(hr_values_inServer_ieee[3]).replace('0b','').zfill(16)),1)
+            print("Server 2+3: ", ms)
+            mdor=round(self.ieee745_to_float(bin(hr_values_inServer_ieee[4]).replace('0b','').zfill(16)+bin(hr_values_inServer_ieee[5]).replace('0b','').zfill(16)),1)
+            print("Server 4+5: ", mdor)
+            md=round(self.ieee745_to_float(bin(hr_values_inServer_ieee[6]).replace('0b','').zfill(16)+bin(hr_values_inServer_ieee[7]).replace('0b','').zfill(16)),1)
+            self.MB_goal_temp = gt
+            self.MB_motor_speed = ms
+            self.MB_motor_dor = mdor
+            self.MB_motor_dwell = md
+            sleep(0.1)
+            self.updateGUIValues.emit()
+            print("Updated GUI with Modbus Inputs")
+        else:
+            pass
+        current_temp = round(self.read_current_temp(),2)
+        self.MB_current_temp = current_temp
+        print("Current temp: ", current_temp)
+        current_temp_ieee1, current_temp_ieee2 = self.float_to_ieee(current_temp)
+        ir_values_ieee = [current_temp_ieee1, current_temp_ieee2]
+        print("ir_values: ", ir_values_ieee)
+        context[slave_id].setValues(register_ir, address, ir_values_ieee)
+        self.updateCurrentTemp.emit()
+
+
+        
+        
+        """ 
         values = [v + 1 for v in values]
         log.debug("new values: " + str(values))
-        context[slave_id].setValues(register, address, values)
+        """
+    def float_to_ieee(self,n):
+        sign = '0'            # 0=positive, 1=negative
+        if n < 0:
+            sign = '1'
+            n = n * -1
+        elif n==0.0:
+            return 0, 0
+        whole_num, dec_num = str(n).split('.')
+        dec = str(bin(int(whole_num)))[2:]+'.'
+        for x in range(30):
+            dec_num = str('0.')+dec_num
+            temp = str(float(dec_num)*2)
+            whole_num, dec_num = temp.split('.')
+            dec+=whole_num
+        dotPlace = dec.find('.')
+        onePlace = dec.find('1')
+        dec = dec.replace(".","")
+        dotPlace -= 1
+        if onePlace > dotPlace:     # n < 1
+            onePlace -= 1
+        mantissa = dec[onePlace+1:]
+        mantissa = mantissa[0:23]
+        exp = dotPlace - onePlace
+        exp_bits = exp + 127
+        exp_bits = bin(exp_bits)[2:].zfill(8)
+        ieee_num = sign + exp_bits + mantissa
+        print("ieee_num: ", ieee_num)
+        fin1, fin2 = ieee_num[0:16], ieee_num[16:32]
+        fin1, fin2 = int(fin1,2), int(fin2,2)
+        return fin1, fin2
+
+    def ieee745_to_float(self,N): # ieee-745 bits (max 32 bit)
+        if N =='00000000000000000000000000000000':
+            return 0.0
+        a = int(N[0])        # sign,     1 bit
+        b = int(N[1:9],2)    # exponent, 8 bits
+        c = int("1"+N[9:], 2)# fraction, len(N)-9 bits
+        x = (-1)**a * c /( 1<<( len(N)-9 - (b-127) ))
+        return x
+
+
+    def read_current_temp(self):
+        buf=['*','0','0','0','0','0','0','f','a','e','7','^']
+        A1,A2 = '0','2'
+        C1,C2 = '0','1'
+        D1,D2,D3,D4,D5,D6,D7,D8='0','0','0','0','0','0','0','0'
+        S1,S2=self.calc_checksum(A1,A2,C1,C2,D1,D2,D3,D4,D5,D6,D7,D8)
+        bst=['*',A1,A2,C1,C2,D1,D2,D3,D4,D5,D6,D7,D8,S1,S2,'\r']
+        #for pn in range(0,16):
+            #ser.write(bst[pn].encode())
+        #for pn in range(0,12):
+            #buf[pn]=ser.read(1)
+        crnt_temp  = self.hexc2dec(buf) / 100
+        return crnt_temp
+
+    def calc_checksum(self,AA1,AA2,CC1,CC2,DD1,DD2,DD3,DD4,DD5,DD6,DD7,DD8):
+        command_string = [AA1,AA2,CC1,CC2,DD1,DD2,DD3,DD4,DD5,DD6,DD7,DD8]
+        val=0
+        for x in range (0,12):
+            val += ord(command_string[x])
+        val_hex=hex(val)
+        SS1=val_hex[-2]
+        SS2=val_hex[-1]
+        return SS1, SS2
+
+    def hexc2dec(self,bufp):
+        newval=0
+        divvy=pow(16,7)
+#sets the word size to DDDDDDDD
+        for pn in range (1,9):
+            vally=ord(bufp[pn])
+            if(vally < 97):
+                subby=48
+            else:
+                subby=87
+                    # ord() converts the character to the ascii number value
+            newval+=((ord(bufp[pn])-subby)*divvy)
+            divvy/=16
+            if(newval > pow(16,8)/2-1):
+                newval=newval-pow(16,8)
+                   #distinguishes between positive and negative numbers
+        return newval
+
 
 
 class MotorWorker(QThread):
@@ -509,6 +687,8 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         self.tempwindow.saveTempSettings.connect(self.updateGT)     # on save aand close, updates main window
         self.motorwindow.saveMotorSettings.connect(self.updateMS)
         self.serverworker.updateModbusValues.connect(self.updateMB)
+        self.serverworker.updateGUIValues.connect(self.updateMainGUIValues)
+        self.serverworker.updateCurrentTemp.connect(self.updateGUICurrentTemp)
 
         self.StartStopMotor.clicked.connect(self.StartStopHandler)
 
@@ -542,11 +722,21 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
         self.MD_SB.setValue(self.motorwindow.dwellSpinBox.value())
 
     def updateMB(self):
+        print("UpdatingMB Values")
         self.serverworker.MB_goal_temp = self.GT_SB.value()
         self.serverworker.MB_current_temp = self.CT_SB.value()
         self.serverworker.MB_motor_speed = self.MS_SB.value()
         self.serverworker.MB_motor_dor = self.MDOR_SB.value()
         self.serverworker.MB_motor_dwell = self.MD_SB.value()
+
+    def updateMainGUIValues(self):
+        self.GT_SB.setValue(self.serverworker.MB_goal_temp)
+        self.MS_SB.setValue(self.serverworker.MB_motor_speed)
+        self.MDOR_SB.setValue(self.serverworker.MB_motor_dor)
+        self.MD_SB.setValue(self.serverworker.MB_motor_dwell)
+
+    def updateGUICurrentTemp(self):
+        self.CT_SB.setValue(self.serverworker.MB_current_temp)
 
     def StartStopHandler(self):
         if self.StartStopMotor.isChecked():
@@ -573,7 +763,12 @@ class MyWindow(QMainWindow):        #can name MyWindow anything, inherit QMainWi
 
         self.serverthread.started.connect(self.serverworker.work)  # begin our worker object's loop when the thread starts running
         self.serverthread.start()
-            
+        self.serverworker.MB_goal_temp = self.GT_SB.value()
+        self.serverworker.MB_current_temp = self.CT_SB.value()
+        self.serverworker.MB_motor_speed = self.MS_SB.value()
+        self.serverworker.MB_motor_dor = self.MDOR_SB.value()
+        self.serverworker.MB_motor_dwell = self.MD_SB.value()
+
     def loop_finished(self):
         # received a callback from the thread that it completed
         print('Loop Finished')

@@ -17,6 +17,12 @@ _**Twisted**_ is an event driven networking engine that allows the Pi to be set 
 
 _**PyQt5**_ is used to create the GUI and run various threads within the program.
 
+**PyQt5 Tools**_ gives additional tools to use with PyQt5.
+
+**PyQtGraph**_ is used to create the updating graph.
+
+**RPi.GPIO**_ is used to access the GPIO pins on the Raspberry Pi.
+
 ## Packages
 - [pySerial](https://pypi.org/project/pyserial/)
 ```bash

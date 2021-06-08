@@ -32,6 +32,7 @@ _**PyQt5**_ is used to create the GUI and run various threads within the program
 ```bash
 pip install pyserial
 ```
+
 - [PyModbus](https://pymodbus.readthedocs.io/en/latest/index.html)
 ```bash
 pip install -U pymodbus[twisted]
@@ -45,4 +46,14 @@ pip install PyQt5
 - [PyQt5 Tools](https://pypi.org/project/pyqt5-tools/)
 ```bash
 pip install pyqt5-tools
+```
+
+- [PyQtGraph](https://pypi.org/project/pyqtgraph/)
+```bash
+pip install pyqtgraph
+```
+
+- [RPi.GPIO](https://pypi.org/project/RPi.GPIO/)
+```bash
+pip install RPi.GPIO
 ```

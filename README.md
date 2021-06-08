@@ -21,7 +21,7 @@ _**PyQt5**_ is used to create the GUI and run various threads within the program
 
 **PyQtGraph**_ is used to create the updating graph.
 
-**RPi.GPIO**_ is used to access the GPIO pins on the Raspberry Pi.
+_**RPi.GPIO**_ is used to access the GPIO pins on the Raspberry Pi.
 
 ## Packages
 - [pySerial](https://pypi.org/project/pyserial/)

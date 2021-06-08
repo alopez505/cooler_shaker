@@ -7,17 +7,7 @@
 ![imageofmachine](https://user-images.githubusercontent.com/31226424/110340390-0cd9ce00-7fde-11eb-8746-3745831877fd.jpg)
 
 ## Info
-This code is used to control the **Liquid Sample Cooler-Shaker System** on a GUI using a Raspberry Pi in Python.
-
-`temp_controller.py` was the initial code used to test and communicate with the RS-485 temperature controller.
-
-`gui.py` was the initial GUI created to interact with the system. It uses _**tkinter**_ to set up a GUI. The program controls the motor and communicates with the temperature controller.
-
-Before adding the Modbus server to `gui.py`. Testing was done on `pymodbus_updating_server.py`. This is for verification that a server can be successfully created before integration.
-
-Development on `gui.py` using  _**tkinter**_ has since stopped. 
-
-Development has moved to `pyqt5_cooler_shaker_modbus.py` using _**PyQt5**_. This is because _**PyQt5**_ has accessible threading capabilities for running the motor and the Modbus TCP/IP server in background threads. Also, the aesthetic to _**PyQt5**_ was preferred.
+This code is used to control the **Liquid Sample Cooler-Shaker System** on a GUI using a Raspberry Pi in Python. This code also creates an asynchronous Modbus server. The program is adjustable via changes to the GUI or via writes to the Modbus server.
 
 _**pySerial**_ is used to communicate with the temperature controller over a serial RS-485 connection.
 

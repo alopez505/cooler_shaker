@@ -7,7 +7,7 @@
 ![imageofmachine](https://user-images.githubusercontent.com/31226424/110340390-0cd9ce00-7fde-11eb-8746-3745831877fd.jpg)
 
 ## Info
-This code is used to control the **Liquid Sample Cooler-Shaker System** on a GUI using a Raspberry Pi in Python. This code also creates an asynchronous Modbus server. The program is adjustable via changes to the GUI or via writes to the Modbus server.
+This code is used to control the **Liquid Sample Cooler-Shaker System** on a GUI using a Raspberry Pi in Python. This code also creates an asynchronous Modbus server. The system is adjustable via changes to the GUI or via writes to the Modbus server.
 
 _**pySerial**_ is used to communicate with the temperature controller over a serial RS-485 connection.
 
@@ -17,7 +17,7 @@ _**Twisted**_ is an event driven networking engine that allows the Pi to be set 
 
 _**PyQt5**_ is used to create the GUI and run various threads within the program.
 
-**PyQt5 Tools**_ gives additional tools to use with PyQt5.
+_**PyQt5 Tools**_ gives additional tools to use with PyQt5.
 
 **PyQtGraph**_ is used to create the updating graph.
 

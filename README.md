@@ -4,7 +4,8 @@
 ## CSU Chico
 ### MECA/MECH 440 - Capstone Project
 ### Sponsor: SLAC National Accelerator Laboratory
-![imageofmachine](https://user-images.githubusercontent.com/31226424/110340390-0cd9ce00-7fde-11eb-8746-3745831877fd.jpg)
+![model](https://github.com/alopez505/cooler_shaker/blob/e59fdcb6c425a75c8efb639449e37c5c35bf737a/pics/model.jpg)
+![GUI](https://github.com/alopez505/cooler_shaker/blob/e59fdcb6c425a75c8efb639449e37c5c35bf737a/pics/gui.PNG)
 
 ## Info
 This code is used to control the **Liquid Sample Cooler-Shaker System** on a GUI using a Raspberry Pi in Python. This code also creates an asynchronous Modbus server. The system is adjustable via changes to the GUI or via writes to the Modbus server.
@@ -53,3 +54,8 @@ pip install pyqtgraph
 ```bash
 pip install RPi.GPIO
 ```
+
+## Pictures
+![P1](https://github.com/alopez505/cooler_shaker/blob/e59fdcb6c425a75c8efb639449e37c5c35bf737a/pics/p1.JPG)
+![P2](https://github.com/alopez505/cooler_shaker/blob/e59fdcb6c425a75c8efb639449e37c5c35bf737a/pics/p2.JPG)
+![complete](https://github.com/alopez505/cooler_shaker/blob/e59fdcb6c425a75c8efb639449e37c5c35bf737a/pics/complete.jpg)

@@ -95,7 +95,7 @@ GPIO.setup(STEP, GPIO.OUT)
 # --------------------------------
 # Using a NEMA 23 stepper with 200 steps per rev
 # --------------------------------
-motorSteps = 200  
+motorSteps = 200 * 16
 
 # --------------------------------
 # Checksum function to send the correct values to controller

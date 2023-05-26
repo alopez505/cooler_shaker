@@ -38,12 +38,12 @@ from pyqtgraph import PlotWidget, mkPen
 # PyModbus creates Modbus server
 # This code uses an asynchronous server
 # --------------------------------
-from pymodbus.version import version
-from pymodbus.server.asynchronous import StartTcpServer
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSequentialDataBlock
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
+from pymodbus3.version import version
+from pymodbus3.server.asynchronous import StartTcpServer
+from pymodbus3.device import ModbusDeviceIdentification
+from pymodbus3.datastore import ModbusSequentialDataBlock
+from pymodbus3.datastore import ModbusSlaveContext, ModbusServerContext
+from pymodbus3.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
 # --------------------------------
 # twisted is used for the LoopingCall functionality

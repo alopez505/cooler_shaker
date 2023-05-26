@@ -2526,9 +2526,7 @@ class MyWindow(QMainWindow):        # can name MyWindow anything, inherit QMainW
             GPIO.output(DIR,CW)
             for x in range (steps):
                 GPIO.output(STEP,GPIO.HIGH)
-                time.sleep(.001)
                 GPIO.output(STEP,GPIO.LOW)
-                time.sleep(.001)
         else:
             if self.RotateFwd_B.isChecked():
                 self.StartStopMotor_B.setEnabled(False)
@@ -2557,9 +2555,7 @@ class MyWindow(QMainWindow):        # can name MyWindow anything, inherit QMainW
             GPIO.output(DIR,CCW)
             for x in range (steps):
                 GPIO.output(STEP,GPIO.HIGH)
-                time.sleep(.001)
                 GPIO.output(STEP,GPIO.LOW)
-                time.sleep(.001)
         else:
             if self.RotateRev_B.isChecked():
                 self.StartStopMotor_B.setEnabled(False)

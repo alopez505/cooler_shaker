@@ -532,7 +532,7 @@ class MotorWorker(QThread):
             #print("sec perstep: ", sec_per_step)
             GPIO.output(DIR,CW)
             i = 0
-            for x in range(round(self.dor/1.8)):
+            for x in range(round(self.dor/360*motorSteps)):
                 print ('CW'+str(i))
                 GPIO.output(STEP,GPIO.HIGH)
                 time.sleep(sec_per_step)
@@ -541,7 +541,7 @@ class MotorWorker(QThread):
             time.sleep(self.dwell)
             GPIO.output(DIR,CCW)
             i = 0
-            for x in range(round(self.dor/1.8)):
+            for x in range(round(self.dor/360*motorSteps)):
                 print ('CCW'+str(i))
                 GPIO.output(STEP,GPIO.HIGH)
                 time.sleep(sec_per_step)
@@ -556,9 +556,9 @@ class MotorWorker(QThread):
         GPIO.output(DIR,CW)
         while self.fwd_working:
             GPIO.output(STEP,GPIO.HIGH)
-            sleep(0.03)
+            time.sleep(0.001)
             GPIO.output(STEP,GPIO.LOW)
-            sleep(0.03)
+            time.sleep(0.001)
             log.debug("Rotate Forward Toggle")
         self.finished.emit() # alert our gui that the loop stopped
 
@@ -566,9 +566,9 @@ class MotorWorker(QThread):
         GPIO.output(DIR,CCW)
         while self.rev_working:
             GPIO.output(STEP,GPIO.HIGH)
-            sleep(0.03)
+            time.sleep(0.001)
             GPIO.output(STEP,GPIO.LOW)
-            sleep(0.03)
+            time.sleep(0.001)
             log.debug("Rotate Reverse Toggle")
         self.finished.emit() # alert our gui that the loop stopped
 
@@ -2520,7 +2520,7 @@ class MyWindow(QMainWindow):        # can name MyWindow anything, inherit QMainW
 
     # Rotates forward, determines if click or toggle is set in general settings
     def Forward(self):
-        steps=int(round((motorSteps/12),0))
+        steps=int(round((motorSteps/6),0))
         if self.genwindow.Click_B.isChecked():
             log.debug("Rotate forward clicked")
             GPIO.output(DIR,CW)
@@ -2551,7 +2551,7 @@ class MyWindow(QMainWindow):        # can name MyWindow anything, inherit QMainW
 
     # Rotates reverse, determines if click or toggle is set in general settings
     def Reverse(self):
-        steps=int(round((motorSteps/12),0))
+        steps=int(round((motorSteps/6),0))
         if self.genwindow.Click_B.isChecked():
             log.debug("Rotate reverse clicked")
             GPIO.output(DIR,CCW)

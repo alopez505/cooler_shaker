@@ -526,7 +526,7 @@ class MotorWorker(QThread):
     # work called when Start/Stop Button is toggled
     def work(self):
         log.debug("Motor Running")
-        sec_per_step = 360/(self.speed*motorSteps)
+        sec_per_step = 180/(self.speed*motorSteps)
         while self.working:
             time.sleep(self.dwell)
             #print("sec perstep: ", sec_per_step)

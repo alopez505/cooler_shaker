@@ -1,6 +1,7 @@
 # --------------------------------
 # Written by: Alexander Lopez
-# Github: https://github.com/alopez505/cooler_shaker
+# Modified by: Ezra Kainz
+# Github: https://github.com/fwappy/cooler_shaker
 # --------------------------------
 #
 # --------------------------------

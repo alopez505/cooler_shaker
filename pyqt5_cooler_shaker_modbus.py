@@ -527,7 +527,7 @@ class MotorWorker(QThread):
     def work(self):
         log.debug("Motor Running")
         sec_per_step = 180/(self.speed*motorSteps)
-        while True: #while self.working: ##disable ability to stop motor
+        while self.working:
             time.sleep(self.dwell)
             #print("sec perstep: ", sec_per_step)
             GPIO.output(DIR,CW)

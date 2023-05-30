@@ -59,3 +59,5 @@ pip install RPi.GPIO
 ![P1](https://github.com/alopez505/cooler_shaker/blob/e59fdcb6c425a75c8efb639449e37c5c35bf737a/pics/p1.JPG)
 ![P2](https://github.com/alopez505/cooler_shaker/blob/e59fdcb6c425a75c8efb639449e37c5c35bf737a/pics/p2.JPG)
 ![complete](https://github.com/alopez505/cooler_shaker/blob/e59fdcb6c425a75c8efb639449e37c5c35bf737a/pics/complete.jpg)
+
+If X server exits on boot its likely the USB-serial adapter for the TEC control board is not plugged in

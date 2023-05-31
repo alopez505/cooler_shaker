@@ -353,7 +353,7 @@ class ServerWorker(QThread):
         # ---- COILS SECTION ----
         if (co_values_inserver[0] != self.MB_motor_on) and (self.GUI_motorFlag == False):
             log.debug("Coils changed from Modbus, setting motor to off/on determined from Modbus")
-            self.motorStatus.emit()
+            #self.motorStatus.emit()
         else:
             co_values = [self.MB_motor_on]
             context[slave_id].setValues(register_co, address, co_values)

@@ -542,14 +542,13 @@ class MotorWorker(QThread):
             time.sleep(self.dwell)
             GPIO.output(DIR,CCW)
             i = 0
-            if self.working:
-                for x in range(round(self.dor/360*motorSteps)):
-                    print ('CCW'+str(i))
-                    GPIO.output(STEP,GPIO.HIGH)
-                    time.sleep(sec_per_step)
-                    GPIO.output(STEP,GPIO.LOW)
-                    time.sleep(sec_per_step)
-                    i +=1
+            for x in range(round(self.dor/360*motorSteps)):
+                print ('CCW'+str(i))
+                GPIO.output(STEP,GPIO.HIGH)
+                time.sleep(sec_per_step)
+                GPIO.output(STEP,GPIO.LOW)
+                time.sleep(sec_per_step)
+                i +=1
         log.debug("Ended Motor Operation")
         self.finished.emit() # alert our gui that the loop stopped
 

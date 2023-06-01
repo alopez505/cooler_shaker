@@ -94,7 +94,7 @@ GPIO.setup(STEP, GPIO.OUT)
 
 
 # --------------------------------
-# Using a NEMA 23 stepper with 200 steps per rev
+# Using a NEMA 23 stepper with 200 steps per rev with x16 microstepping driver
 # --------------------------------
 motorSteps = 200 * 16
 

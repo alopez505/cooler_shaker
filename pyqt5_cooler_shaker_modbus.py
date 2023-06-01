@@ -523,6 +523,7 @@ class MotorWorker(QThread):
         self.speed = 0.0
         self.dor = 0.0
         self.dwell = 0.0
+        jog_speed = 180/(360*motorSteps)
 
     # work called when Start/Stop Button is toggled
     def work(self):
@@ -557,9 +558,9 @@ class MotorWorker(QThread):
         GPIO.output(DIR,CW)
         while self.fwd_working:
             GPIO.output(STEP,GPIO.HIGH)
-            time.sleep(0.001)
+            time.sleep(jog_speed)
             GPIO.output(STEP,GPIO.LOW)
-            time.sleep(0.001)
+            time.sleep(jog_speed)
             log.debug("Rotate Forward Toggle")
         self.finished.emit() # alert our gui that the loop stopped
 
@@ -567,9 +568,9 @@ class MotorWorker(QThread):
         GPIO.output(DIR,CCW)
         while self.rev_working:
             GPIO.output(STEP,GPIO.HIGH)
-            time.sleep(0.001)
+            time.sleep(jog_speed)
             GPIO.output(STEP,GPIO.LOW)
-            time.sleep(0.001)
+            time.sleep(jog_speed)
             log.debug("Rotate Reverse Toggle")
         self.finished.emit() # alert our gui that the loop stopped
 

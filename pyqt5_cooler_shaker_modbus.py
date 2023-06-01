@@ -524,6 +524,7 @@ class MotorWorker(QThread):
         self.dor = 0.0
         self.dwell = 0.0
         jog_speed = 180/(360*motorSteps)
+        pos = 0
 
     # work called when Start/Stop Button is toggled
     def work(self):
@@ -533,24 +534,36 @@ class MotorWorker(QThread):
             time.sleep(self.dwell)
             #print("sec perstep: ", sec_per_step)
             GPIO.output(DIR,CW)
-            i = 0
             for x in range(round(self.dor/360*motorSteps)):
-                print ('CW'+str(i))
+                pos = pos+1
+                #print ('CW'+str(pos))
                 GPIO.output(STEP,GPIO.HIGH)
                 time.sleep(sec_per_step)
                 GPIO.output(STEP,GPIO.LOW)
                 time.sleep(sec_per_step)
+                if not self.working:
+                    break
             time.sleep(self.dwell)
+            if not self.working:
+                break
             GPIO.output(DIR,CCW)
-            i = 0
             for x in range(round(self.dor/360*motorSteps)):
-                print ('CCW'+str(i))
+                pos = pos-1
+                #print ('CCW'+str(pos))
                 GPIO.output(STEP,GPIO.HIGH)
                 time.sleep(sec_per_step)
                 GPIO.output(STEP,GPIO.LOW)
                 time.sleep(sec_per_step)
-                i +=1
+                if not self.working:
+                    break
         log.debug("Ended Motor Operation")
+        while pos>0:
+                pos = pos-1
+                #print ('CCW'+str(pos))
+                GPIO.output(STEP,GPIO.HIGH)
+                time.sleep(jog_speed)
+                GPIO.output(STEP,GPIO.LOW)
+                time.sleep(jog_speed)
         self.finished.emit() # alert our gui that the loop stopped
 
 

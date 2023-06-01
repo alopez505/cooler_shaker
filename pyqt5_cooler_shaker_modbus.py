@@ -573,6 +573,7 @@ class MotorWorker(QThread):
 
 
     def work_fwd(self):
+        jog_speed = 180/(720*motorSteps) # not sure why it wont reference __init__
         GPIO.output(DIR,CW)
         while self.fwd_working:
             GPIO.output(STEP,GPIO.HIGH)
@@ -583,6 +584,7 @@ class MotorWorker(QThread):
         self.finished.emit() # alert our gui that the loop stopped
 
     def work_rev(self):
+        jog_speed = 180/(720*motorSteps) # not sure why it wont reference __init__
         GPIO.output(DIR,CCW)
         while self.rev_working:
             GPIO.output(STEP,GPIO.HIGH)

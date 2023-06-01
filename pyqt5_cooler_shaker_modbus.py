@@ -531,12 +531,11 @@ class MotorWorker(QThread):
         sec_per_step = 180/(self.speed*motorSteps)
         jog_speed = 180/(720*motorSteps) # not sure why it wont reference __init__
         pos = 0 # also not sure why wont reference __init__ here
-        dor = range(round(self.dor/360*motorSteps))
+        steps = range(round(self.dor/360*motorSteps))
         while self.working:
-            time.sleep(self.dwell)
             #print("sec perstep: ", sec_per_step)
             GPIO.output(DIR,CW)
-            for x in dor:
+            while pos > steps:
                 pos +=1
                 #print ('CW'+str(pos))
                 GPIO.output(STEP,GPIO.HIGH)
@@ -551,7 +550,7 @@ class MotorWorker(QThread):
             if not self.working:
                 break
             GPIO.output(DIR,CCW)
-            for x in dor:
+            while pos > 0:
                 pos -=1
                 #print ('CCW'+str(pos))
                 GPIO.output(STEP,GPIO.HIGH)
@@ -560,6 +559,9 @@ class MotorWorker(QThread):
                 time.sleep(sec_per_step)
                 if not self.working:
                     break
+            if not self.working:
+                break
+            time.sleep(self.dwell)
         GPIO.output(DIR,CCW)
         while pos > 0:
                 pos -=1

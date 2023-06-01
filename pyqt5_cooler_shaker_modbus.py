@@ -523,19 +523,20 @@ class MotorWorker(QThread):
         self.speed = 0.0
         self.dor = 0.0
         self.dwell = 0.0
-        jog_speed = 180/(360*motorSteps)
-        pos = 0
+        jog_speed = 180/(720*motorSteps)
 
     # work called when Start/Stop Button is toggled
     def work(self):
         log.debug("Motor Running")
         sec_per_step = 180/(self.speed*motorSteps)
+        jog_speed = 180/(720*motorSteps)
+        pos = 0
         while self.working:
             time.sleep(self.dwell)
             #print("sec perstep: ", sec_per_step)
             GPIO.output(DIR,CW)
             for x in range(round(self.dor/360*motorSteps)):
-                pos = pos+1
+                pos +=1
                 #print ('CW'+str(pos))
                 GPIO.output(STEP,GPIO.HIGH)
                 time.sleep(sec_per_step)
@@ -543,12 +544,14 @@ class MotorWorker(QThread):
                 time.sleep(sec_per_step)
                 if not self.working:
                     break
+            if not self.working:
+                break
             time.sleep(self.dwell)
             if not self.working:
                 break
             GPIO.output(DIR,CCW)
             for x in range(round(self.dor/360*motorSteps)):
-                pos = pos-1
+                pos -=1
                 #print ('CCW'+str(pos))
                 GPIO.output(STEP,GPIO.HIGH)
                 time.sleep(sec_per_step)
@@ -556,14 +559,15 @@ class MotorWorker(QThread):
                 time.sleep(sec_per_step)
                 if not self.working:
                     break
-        log.debug("Ended Motor Operation")
-        while pos>0:
-                pos = pos-1
+        GPIO.output(DIR,CCW)
+        while pos > 0:
+                pos -=1
                 #print ('CCW'+str(pos))
                 GPIO.output(STEP,GPIO.HIGH)
                 time.sleep(jog_speed)
                 GPIO.output(STEP,GPIO.LOW)
                 time.sleep(jog_speed)
+        log.debug("Ended Motor Operation")
         self.finished.emit() # alert our gui that the loop stopped
 
 
